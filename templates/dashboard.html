@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<p>Total Expense: ₹{{ summary.monthly_expense }}</p>
+<p>Income: ₹{{ summary.monthly_income }}</p>
+<p>Savings: ₹{{ summary.savings }}</p>
+
+{% endblock %}

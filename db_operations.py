@@ -5,7 +5,7 @@
 from mysql.connector import Error
 from config import get_cursor, DEFAULT_USER_ID
 from datetime import date, datetime
-import streamlit as st
+
 
 
 # ╔══════════════════════════════════════════════════════════╗
@@ -33,7 +33,7 @@ def add_category(name: str, icon: str = "💰", color: str = "#6C63FF") -> bool:
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not add category: {e}")
+       
         return False
     finally:
         cur.close()
@@ -66,7 +66,7 @@ def add_expense(
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not add expense: {e}")
+     
         return False
     finally:
         cur.close()
@@ -154,7 +154,7 @@ def update_expense(
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not update expense: {e}")
+       
         return False
     finally:
         cur.close()
@@ -169,7 +169,7 @@ def delete_expense(expense_id: int) -> bool:
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not delete expense: {e}")
+        
         return False
     finally:
         cur.close()
@@ -197,7 +197,7 @@ def add_income(
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not add income: {e}")
+      
         return False
     finally:
         cur.close()
@@ -230,7 +230,7 @@ def delete_income(income_id: int) -> bool:
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not delete income: {e}")
+       
         return False
     finally:
         cur.close()
@@ -254,7 +254,7 @@ def set_budget(user_id: int, category_id: int, month_year: str, amount: float) -
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not set budget: {e}")
+      
         return False
     finally:
         cur.close()
@@ -441,7 +441,7 @@ def update_monthly_budget(user_id: int, budget: float) -> bool:
         return True
     except Error as e:
         conn.rollback()
-        st.error(f"Could not update budget: {e}")
+      
         return False
     finally:
         cur.close()

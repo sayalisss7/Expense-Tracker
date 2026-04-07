@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Add Expense</h2>
+
+<form method="POST">
+    <input name="title" placeholder="Title" required><br><br>
+
+    <input name="amount" type="number" placeholder="Amount" required><br><br>
+
+    <select name="category_id">
+        {% for c in categories %}
+        <option value="{{ c.id }}">{{ c.name }}</option>
+        {% endfor %}
+    </select><br><br>
+
+    <input name="date" type="date"><br><br>
+
+    <input name="payment_mode" placeholder="Cash/Card"><br><br>
+
+    <button type="submit">Add Expense</button>
+</form>
+
+{% endblock %}
