@@ -8,6 +8,10 @@ def dashboard():
     summary = db.get_dashboard_summary(1)
     return render_template("dashboard.html", summary=summary)
 
+@app.template_filter('format_inr')
+def format_inr(value):
+    return f"₹{value:,.2f}"
+
 @app.route("/expenses")
 def expenses():
     data = db.get_expenses(1)
