@@ -1,23 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Expense Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suspendify – Smart Expense Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-    <nav>
-        <a href="/">Dashboard</a>
-        <a href="/expenses">Expenses</a>
-        <a href="/add-expense">Add Expense</a>
-    </nav>
+    <canvas id="particles-canvas"></canvas>
 
-    <hr>
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <div class="brand">
+                <span>S</span>Suspendify
+            </div>
+            <div class="tagline">Smart Expense Tracking</div>
+        </div>
 
-    {% block content %}{% endblock %}
+        <nav class="nav-links">
+            <a href="/">
+                <span class="nav-icon">🏠</span>
+                Dashboard
+            </a>
+            <a href="/expenses">
+                <span class="nav-icon">📋</span>
+                Expenses
+            </a>
+            <a href="/add-expense">
+                <span class="nav-icon">➕</span>
+                Add Expense
+            </a>
+        </nav>
 
+        <div class="sidebar-footer">
+            <p>© 2025 Suspendify</p>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script>
+        // ── Highlight active nav link ──
+        document.querySelectorAll('.nav-links a').forEach(a => {
+            if (a.getAttribute('href') === window.location.pathname) {
+                a.classList.add('active');
+            }
+        });
+
+        // ── Very subtle particle canvas (light mode — barely visible) ──
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Only blue-toned tiny dots on white background
+        const COLORS = ['#1A3AFF', '#3D5AFE', '#6B7FFF', '#C2C8E0'];
+
+        function Pt() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.r = Math.random() * 1.2 + 0.3;
+            this.vx = (Math.random() - 0.5) * 0.2;
+            this.vy = (Math.random() - 0.5) * 0.2;
+            this.alpha = Math.random() * 0.18 + 0.04;
+            this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        }
+
+        Pt.prototype.tick = function () {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y < 0) this.y = canvas.height;
+            if (this.y > canvas.height) this.y = 0;
+        };
+
+        Pt.prototype.draw = function () {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.alpha;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        };
+
+        function links() {
+            for (let i = 0; i < pts.length; i++) {
+                for (let j = i + 1; j < pts.length; j++) {
+                    const dx = pts[i].x - pts[j].x;
+                    const dy = pts[i].y - pts[j].y;
+                    const d = Math.sqrt(dx * dx + dy * dy);
+                    if (d < 110) {
+                        ctx.beginPath();
+                        ctx.moveTo(pts[i].x, pts[i].y);
+                        ctx.lineTo(pts[j].x, pts[j].y);
+                        ctx.strokeStyle = '#1A3AFF';
+                        ctx.globalAlpha = (1 - d / 110) * 0.05;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pts.forEach(p => { p.tick(); p.draw(); });
+            links();
+            requestAnimationFrame(loop);
+        }
+
+        function init() {
+            pts = [];
+            for (let i = 0; i < 60; i++) pts.push(new Pt());
+        }
+
+        window.addEventListener('resize', () => { resize(); init(); });
+        resize(); init(); loop();
+    </script>
 </body>
 
 </html>

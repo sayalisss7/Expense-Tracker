@@ -1,10 +1,187 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Dashboard</h2>
 
-<p>Total Expense: ₹{{ summary.monthly_expense }}</p>
-<p>Income: ₹{{ summary.monthly_income }}</p>
-<p>Savings: ₹{{ summary.savings }}</p>
+<!-- ── Page Header ── -->
+<div class="page-header" style="animation: fadeSlideDown 0.45s ease both;
+     display:flex; align-items:center; justify-content:space-between;">
+    <div>
+        <h2>Good morning 👋</h2>
+        <p class="subtitle">Here's your financial overview</p>
+    </div>
+    <a href="/add-expense" class="btn btn-primary" style="gap:8px;">
+        ➕ Add Expense
+    </a>
+</div>
+
+<!-- ── Hero Balance Card (like the app's blue top section) ── -->
+<div class="card card-blue" style="margin-bottom:20px; padding:20px 24px; height:180px;
+     animation: fadeSlideUp 0.45s 0.05s ease both;">
+    <div style="position:relative; z-index:1;">
+        <div style="font-size:12px; font-weight:600; letter-spacing:1.8px;
+                    text-transform:uppercase; color:rgba(255,255,255,0.6); margin-bottom:10px;">
+            Available Balance
+        </div>
+        <div class="counter-hero" data-target="{{ summary.savings }}" style="font-family:var(--font-display); font-size:48px; font-weight:700;
+                    color:#fff; letter-spacing:-1.5px; line-height:1; margin-bottom:6px;">
+            ₹0
+        </div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.5);">Net savings this month</div>
+
+        <!-- Quick action pills (mirroring the image) -->
+        <div style="display:flex; gap:12px; margin-top:28px; flex-wrap:wrap;">
+            {% set pills = [('📋','Expenses','/expenses'), ('➕','Add New','/add-expense')] %}
+            {% for icon, label, href in pills %}
+            <a href="{{ href }}" style="display:flex; flex-direction:column; align-items:center; gap:7px;
+                      text-decoration:none; min-width:72px;">
+                <div style="width:46px; height:46px; border-radius:14px;
+                            background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:18px; transition:background 0.2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                    {{ icon }}
+                </div>
+                <span style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.75);">{{ label }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Income / Expense Cards (like bottom of stats screen) ── -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px;">
+
+    <!-- Income -->
+    <div class="card"
+        style="animation: fadeSlideUp 0.45s 0.12s ease both;
+         background:linear-gradient(135deg,#1A3AFF,#3D5AFE); border:none; color:#fff; position:relative; overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;
+                    border-radius:50%;background:rgba(255,255,255,0.07);"></div>
+        <div style="position:relative;z-index:1;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <div style="width:32px;height:32px;border-radius:10px;
+                            background:rgba(255,255,255,0.15);display:flex;
+                            align-items:center;justify-content:center;font-size:14px;">⬇</div>
+                <span style="font-size:12px;font-weight:600;letter-spacing:1px;
+                             text-transform:uppercase;color:rgba(255,255,255,0.7);">Income</span>
+            </div>
+            <div class="counter" data-target="{{ summary.monthly_income }}" style="font-family:var(--font-display);font-size:28px;font-weight:700;
+                        color:#fff;letter-spacing:-0.5px;">₹0</div>
+        </div>
+    </div>
+
+    <!-- Expense -->
+    <div class="card" style="animation: fadeSlideUp 0.45s 0.18s ease both;
+         border:1.5px solid var(--grey-5); position:relative; overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;
+                    border-radius:50%;background:var(--blue-tint);opacity:0.5;"></div>
+        <div style="position:relative;z-index:1;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <div style="width:32px;height:32px;border-radius:10px;
+                            background:var(--danger-tint);display:flex;
+                            align-items:center;justify-content:center;font-size:14px;color:var(--danger);">⬆</div>
+                <span style="font-size:12px;font-weight:600;letter-spacing:1px;
+                             text-transform:uppercase;color:var(--grey-3);">Expense</span>
+            </div>
+            <div class="counter" data-target="{{ summary.monthly_expense }}" style="font-family:var(--font-display);font-size:28px;font-weight:700;
+                        color:var(--danger);letter-spacing:-0.5px;">₹0</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ── Overview + Insight row ── -->
+<div style="display:grid; grid-template-columns:1fr 300px; gap:18px;">
+
+    <!-- Monthly bars (visual only, like the chart in image) -->
+    <div class="card" style="animation: fadeSlideUp 0.45s 0.24s ease both;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;">
+            <div style="font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--navy);">Overview
+            </div>
+            <span style="font-size:12px;font-weight:600;color:var(--blue);background:var(--blue-tint);
+                         padding:4px 14px;border-radius:99px;border:1px solid var(--blue-tint2);">Month ↓</span>
+        </div>
+
+        <!-- Bar chart visual -->
+        <div style="display:flex;align-items:flex-end;gap:10px;height:100px;margin-bottom:14px;">
+            {% set bars = [65,45,80,30,90,55,70,40] %}
+            {% for h in bars %}
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div style="width:100%;border-radius:6px 6px 0 0;height:{{ h }}%;
+                            background:{% if loop.index == 5 %}var(--blue){% else %}var(--blue-tint2){% endif %};
+                            transition:height 0.6s {{ loop.index * 0.05 }}s ease;
+                            animation:barGrow 0.8s {{ loop.index * 0.06 }}s ease both;"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="display:flex;align-items:center;gap:20px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:10px;height:10px;border-radius:3px;background:var(--blue);"></div>
+                <span style="font-size:12px;color:var(--grey-3);font-weight:500;">Income</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:10px;height:10px;border-radius:3px;background:var(--blue-tint2);"></div>
+                <span style="font-size:12px;color:var(--grey-3);font-weight:500;">Expense</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Insight card -->
+    <div class="card" style="animation: fadeSlideUp 0.45s 0.30s ease both;
+         background:var(--blue-tint); border-color:var(--blue-tint2);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+                    color:var(--blue);margin-bottom:14px;">✦ Smart Tip</div>
+        <p style="color:var(--grey-1);font-size:13px;line-height:1.75;">
+            Small daily expenses add up to over
+            <strong style="color:var(--navy);">₹18,000+</strong> annually.
+            Track every transaction to stay ahead.
+        </p>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--blue-tint2);">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--blue);
+                        display:inline-block;margin-right:8px;
+                        box-shadow:0 0 0 4px rgba(26,58,255,0.15);
+                        animation:pulseRing 2s infinite;"></div>
+            <span style="font-size:12px;color:var(--grey-2);font-weight:500;">Track · Analyse · Save</span>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    @keyframes pulseRing {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 4px rgba(26, 58, 255, 0.15);
+        }
+
+        50% {
+            box-shadow: 0 0 0 8px rgba(26, 58, 255, 0.05);
+        }
+    }
+
+    @keyframes barGrow {
+        from {
+            transform: scaleY(0);
+            transform-origin: bottom;
+        }
+    }
+</style>
+
+<script>
+    document.querySelectorAll('.counter, .counter-hero').forEach(el => {
+        const target = parseFloat(el.dataset.target) || 0;
+        if (target === 0) { el.textContent = '₹0'; return; }
+        let current = 0;
+        const step = target / 55;
+        const iv = setInterval(() => {
+            current += step;
+            if (current >= target) { current = target; clearInterval(iv); }
+            el.textContent = '₹' + Math.floor(current).toLocaleString('en-IN');
+        }, 16);
+    });
+</script>
 
 {% endblock %}
