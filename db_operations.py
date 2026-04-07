@@ -335,37 +335,36 @@ def get_category_totals(
 
 
 def get_dashboard_summary(user_id: int = DEFAULT_USER_ID) -> dict:
-    """Key KPIs for the current month dashboard."""
     conn, cur = get_cursor()
 
-    # Current month expenses
+    # Expenses
     cur.execute(
         """
         SELECT COALESCE(SUM(amount), 0) AS total_expense,
-               COUNT(*)                 AS txn_count
-        FROM   expenses
-        WHERE  user_id = %s
-          AND  YEAR(expense_date)  = YEAR(CURDATE())
-          AND  MONTH(expense_date) = MONTH(CURDATE())
+               COUNT(*) AS txn_count
+        FROM expenses
+        WHERE user_id = %s
+          AND YEAR(expense_date) = YEAR(CURDATE())
+          AND MONTH(expense_date) = MONTH(CURDATE())
         """,
         (user_id,),
     )
     exp = cur.fetchone()
 
-    # Current month income
+    # Income
     cur.execute(
         """
         SELECT COALESCE(SUM(amount), 0) AS total_income
-        FROM   income
-        WHERE  user_id = %s
-          AND  YEAR(income_date)  = YEAR(CURDATE())
-          AND  MONTH(income_date) = MONTH(CURDATE())
+        FROM income
+        WHERE user_id = %s
+          AND YEAR(income_date) = YEAR(CURDATE())
+          AND MONTH(income_date) = MONTH(CURDATE())
         """,
         (user_id,),
     )
     inc = cur.fetchone()
 
-    # All-time totals
+    # All-time
     cur.execute(
         "SELECT COALESCE(SUM(amount), 0) AS all_time FROM expenses WHERE user_id=%s",
         (user_id,),
@@ -373,12 +372,24 @@ def get_dashboard_summary(user_id: int = DEFAULT_USER_ID) -> dict:
     all_time = cur.fetchone()
 
     cur.close()
+
+    # ✅ FORCE POSITIVE VALUES
+    income = max(float(inc["total_income"]), 0)
+    expense = max(float(exp["total_expense"]), 0)
+
+    # ✅ MAIN LOGIC
+    savings = income - expense
+
+    # ✅ OPTIONAL UX FIX (recommended)
+    if savings < 0:
+        savings = 0
+
     return {
-        "monthly_expense": float(exp["total_expense"]),
-        "monthly_income":  float(inc["total_income"]),
-        "txn_count":       int(exp["txn_count"]),
-        "savings":         float(inc["total_income"]) - float(exp["total_expense"]),
-        "all_time":        float(all_time["all_time"]),
+        "monthly_expense": expense,
+        "monthly_income": income,
+        "txn_count": int(exp["txn_count"]),
+        "savings": savings,
+        "all_time": float(all_time["all_time"]),
     }
 
 

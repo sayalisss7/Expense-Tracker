@@ -62,6 +62,9 @@ CREATE TABLE IF NOT EXISTS expenses (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT
 );
 
+ALTER TABLE expenses 
+MODIFY payment_mode ENUM('Cash','Card','UPI','Net Banking','Wallet','Other');
+
 -- ── Income table ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS income (
     id          INT AUTO_INCREMENT PRIMARY KEY,

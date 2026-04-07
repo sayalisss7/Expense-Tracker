@@ -41,48 +41,77 @@
                 <th>Category</th>
                 <th>Date</th>
                 <th>Payment</th>
+                <th>Actions</th> <!-- ✅ ADDED -->
             </tr>
         </thead>
+
         <tbody id="expense-body">
             {% for e in expenses %}
-            <tr style="animation: fadeIn 0.3s {{ loop.index * 0.04 }}s ease both;">
-                <td style="color:var(--grey-4); font-size:12px; font-weight:600;">
-                    {{ loop.index }}
-                </td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div class="icon-circle icon-circle-blue"
-                            style="width:36px;height:36px;font-size:14px;border-radius:10px;">
-                            💳
-                        </div>
-                        <span style="font-weight:600; color:var(--navy);">{{ e.title }}</span>
+
+
+            <td style="color:var(--grey-4); font-size:12px; font-weight:600;">
+                {{ loop.index }}
+            </td>
+
+            <td>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="icon-circle icon-circle-blue"
+                        style="width:36px;height:36px;font-size:14px;border-radius:10px;">
+                        💳
                     </div>
-                </td>
-                <td>
-                    <span style="font-family:var(--font-display); font-size:17px;
+                    <span style="font-weight:600; color:var(--navy);">{{ e.title }}</span>
+                </div>
+            </td>
+
+            <td>
+                <span style="font-family:var(--font-display); font-size:17px;
                                  font-weight:700; color:var(--danger);">
-                        ₹{{ e.amount }}
-                    </span>
-                </td>
-                <td>
-                    <span class="badge badge-blue">
-                        {{ e.category if e.category else '—' }}
-                    </span>
-                </td>
-                <td style="color:var(--grey-3); font-size:13px;">
-                    {{ e.date if e.date else '—' }}
-                </td>
-                <td>
-                    {% if e.payment_mode %}
-                    <span class="badge badge-grey">{{ e.payment_mode }}</span>
-                    {% else %}
-                    <span style="color:var(--grey-4);">—</span>
-                    {% endif %}
-                </td>
+                    ₹{{ e.amount }}
+                </span>
+            </td>
+
+            <td>
+                <span class="badge badge-blue">
+                    {{ e.category if e.category else '—' }}
+                </span>
+            </td>
+
+            <td style="color:var(--grey-3); font-size:13px;">
+                {{ e.date if e.date else '—' }}
+            </td>
+
+            <td>
+                {% if e.payment_mode %}
+                <span class="badge badge-grey">{{ e.payment_mode }}</span>
+                {% else %}
+                <span style="color:var(--grey-4);">—</span>
+                {% endif %}
+            </td>
+
+            <!-- ✅ ACTION BUTTONS -->
+            <td>
+                <div style="display:flex; gap:10px;">
+
+                    <!-- ✏️ Edit -->
+                    <a href="{{ url_for('edit_expense', id=e.id) }}" class="badge badge-blue"
+                        style="cursor:pointer; text-decoration:none;">
+                        ✏️ Edit
+                    </a>
+
+                    <!-- 🗑️ Delete -->
+                    <a href="/delete-expense/{{ e.id }}" onclick="return confirmDelete()" class="badge badge-grey"
+                        style="cursor:pointer; text-decoration:none;">
+                        🗑️
+                    </a>
+
+                </div>
+            </td>
+
             </tr>
+
             {% else %}
             <tr id="empty-row">
-                <td colspan="6" style="text-align:center; padding:64px 20px; color:var(--grey-3);">
+                <td colspan="7" style="text-align:center; padding:64px 20px; color:var(--grey-3);">
                     <div style="font-size:40px; margin-bottom:16px; opacity:0.3;">📋</div>
                     <div style="font-family:var(--font-display); font-size:22px;
                                 color:var(--navy); font-weight:600; margin-bottom:8px;">
@@ -104,11 +133,13 @@
     function filterTable(q) {
         const rows = document.querySelectorAll('#expense-body tr:not(#empty-row)');
         let visible = 0;
+
         rows.forEach(row => {
             const match = row.textContent.toLowerCase().includes(q.toLowerCase());
             row.style.display = match ? '' : 'none';
             if (match) visible++;
         });
+
         document.getElementById('count-badge').textContent = visible + ' entries';
     }
 

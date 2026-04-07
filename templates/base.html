@@ -54,7 +54,7 @@
             }
         });
 
-        // ── Very subtle particle canvas (light mode — barely visible) ──
+        // ── Particle canvas ──
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
         let pts = [];
@@ -64,7 +64,6 @@
             canvas.height = window.innerHeight;
         }
 
-        // Only blue-toned tiny dots on white background
         const COLORS = ['#1A3AFF', '#3D5AFE', '#6B7FFF', '#C2C8E0'];
 
         function Pt() {
@@ -130,6 +129,40 @@
         window.addEventListener('resize', () => { resize(); init(); });
         resize(); init(); loop();
     </script>
+
+    <!-- 🔥 MODERN POPUP SYSTEM -->
+    <div id="popup" style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #ff4d4d;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        display: none;
+        z-index: 9999;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+    ">
+    </div>
+
+    <script>
+        function showPopup(msg) {
+            const popup = document.getElementById("popup");
+            popup.innerText = msg;
+            popup.style.display = "block";
+
+            setTimeout(() => {
+                popup.style.display = "none";
+            }, 3000);
+        }
+
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete?");
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 
 </html>

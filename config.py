@@ -1,18 +1,17 @@
 import mysql.connector
 
+# Update these with your actual MySQL credentials
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'root',
+    'database': 'expense_tracker'
+}
+
 DEFAULT_USER_ID = 1
-
-def get_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="root",
-        database="expense_tracker",
-      
-    )
-
-
-
+CURRENCY = "₹"
 def get_cursor():
-    conn = get_connection()
-    return conn, conn.cursor(dictionary=True)
+    """Helper function to get a database connection and cursor."""
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cur = conn.cursor(dictionary=True)
+    return conn, cur
