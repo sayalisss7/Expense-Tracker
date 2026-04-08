@@ -1,104 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import db_operations as db
 from datetime import datetime, date
+from collections import defaultdict
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
 
 # ───────────────── Dashboard ─────────────────
-# @app.route("/")
-# def dashboard():
-#     summary = db.get_dashboard_summary(1)
-#     return render_template("dashboard.html", summary=summary)
-# from collections import defaultdict
-
-# @app.route("/dashboard")
-# def dashboard():
-#     expenses = get_all_expenses()   # or your DB function
-#     income = get_all_income()       # adjust based on your code
-
-#     total_income = sum(i['amount'] for i in income)
-#     total_expense = sum(e['amount'] for e in expenses)
-
-#     # 🔥 Category-wise grouping
-#     category_data = defaultdict(float)
-
-#     for e in expenses:
-#         category = e['category'] if e['category'] else "Other"
-#         category_data[category] += e['amount']
-
-#     chart_labels = list(category_data.keys())
-#     chart_values = list(category_data.values())
-
-#     summary = {
-#         "monthly_income": total_income,
-#         "monthly_expense": total_expense,
-#         "savings": total_income - total_expense
-#     }
-
-#     return render_template(
-#         "dashboard.html",
-#         summary=summary,
-#         chart_labels=chart_labels,
-#         chart_values=chart_values
-#     )
-
-
-
-# @app.route("/")
-# @app.route("/dashboard")
-# def dashboard():
-#     expenses = db.get_expenses(1)
-#     income = db.get_income(1)
-
-#     total_income = sum(i['amount'] for i in income)
-#     total_expense = sum(e['amount'] for e in expenses)
-
-#     from collections import defaultdict
-#     category_data = defaultdict(float)
-
-    # for e in expenses:
-    #     category = e.get('category', "Other")
-    #     category_data[category] += e['amount']
-
-    # chart_labels = list(category_data.keys())
-    # chart_values = list(category_data.values())
-
-#     from collections import defaultdict
-
-# category_data = defaultdict(float)
-
-# for e in expenses:
-#     category = e.get('category', "Other")
-#     category_data[category] += float(e['amount'])
-
-# total_income = sum(float(i['amount']) for i in income)
-# total_expense = sum(float(e['amount']) for e in expenses)
-
-# summary = {
-#         "monthly_income": total_income,
-#         "monthly_expense": total_expense,
-#         "savings": total_income - total_expense
-#     }
-
-# return render_template(
-#         "dashboard.html",
-#         summary=summary,
-#         chart_labels=chart_labels,
-#         chart_values=chart_values
-#     )
-from collections import defaultdict
-
 @app.route("/")
 @app.route("/dashboard")
 def dashboard():
     expenses = db.get_expenses(1)
-    income = db.get_income(1)
+    income   = db.get_income(1)
 
-    # 🔥 Category-wise grouping
+    # Category-wise grouping for chart
     category_data = defaultdict(float)
-
     for e in expenses:
         category = e.get('category', "Other")
         category_data[category] += float(e['amount'])
@@ -106,24 +23,46 @@ def dashboard():
     chart_labels = list(category_data.keys())
     chart_values = list(category_data.values())
 
-    # 💰 Totals
-    total_income = sum(float(i['amount']) for i in income)
+    # # ── Monthly trend data ──
+    # monthly_data = defaultdict(float)
+
+    # for e in expenses:
+    #     date_val = e.get("expense_date")
+
+    #     if isinstance(date_val, str):
+    #         date_val = datetime.strptime(date_val, "%Y-%m-%d")
+
+    #     month = date_val.strftime("%b")
+    #     monthly_data[month] += float(e["amount"])
+
+    # # sort months properly
+    # sorted_data = dict(sorted(
+    #     monthly_data.items(),
+    #     key=lambda x: datetime.strptime(x[0], "%b")
+    # ))
+
+    # month_labels = list(sorted_data.keys())
+    # month_values = list(sorted_data.values()) 
+
+
+    # Totals
+    total_income  = sum(float(i['amount']) for i in income)
     total_expense = sum(float(e['amount']) for e in expenses)
 
     summary = {
-        "monthly_income": total_income,
+        "monthly_income":  total_income,
         "monthly_expense": total_expense,
-        "savings": total_income - total_expense
+        "savings":         total_income - total_expense
     }
 
     return render_template(
         "dashboard.html",
         summary=summary,
         chart_labels=chart_labels,
-        chart_values=chart_values
+        chart_values=chart_values,
+       # month_labels=month_labels,
+        #month_values=month_values
     )
-
-
 
 
 # ───────────────── Expenses List ─────────────────
@@ -144,21 +83,18 @@ def add_expense():
 
     if request.method == "POST":
         try:
-            title = request.form["title"].strip()
-            amount = float(request.form["amount"])
+            title       = request.form["title"].strip()
+            amount      = float(request.form["amount"])
             category_id = int(request.form["category_id"])
 
-            # ✅ FIX DATE
             date_val = request.form["date"]
             if date_val:
                 date_val = datetime.strptime(date_val, "%Y-%m-%d").date()
             else:
                 date_val = date.today()
 
-            # ✅ FIX PAYMENT MODE
             payment = request.form["payment_mode"] or "Cash"
 
-            # 🔒 Validation
             if not title or amount <= 0:
                 flash("Invalid data entered!", "error")
                 return redirect(url_for("add_expense"))
@@ -185,7 +121,7 @@ def add_expense():
 # ───────────────── Edit Expense ─────────────────
 @app.route("/edit-expenses/<int:id>", methods=["GET", "POST"])
 def edit_expense(id):
-    expense = db.get_expense_by_id(id)
+    expense    = db.get_expense_by_id(id)
     categories = db.get_all_categories()
 
     if not expense:
@@ -194,7 +130,6 @@ def edit_expense(id):
 
     if request.method == "POST":
         try:
-            # ✅ FIX DATE
             date_val = request.form["date"]
             if date_val:
                 date_val = datetime.strptime(date_val, "%Y-%m-%d").date()
@@ -237,7 +172,6 @@ def add_income():
             source = request.form["source"].strip()
             amount = float(request.form["amount"])
 
-            # ✅ FIX DATE
             date_val = request.form["date"]
             if date_val:
                 date_val = datetime.strptime(date_val, "%Y-%m-%d").date()
