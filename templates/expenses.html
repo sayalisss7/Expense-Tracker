@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ── Header ── -->
+<div class="page-header" style="display:flex;align-items:center;justify-content:space-between;
+            animation: fadeSlideDown 0.45s ease both;">
+    <div>
+        <h2>Expenses</h2>
+        <p class="subtitle">All recorded transactions</p>
+    </div>
+    <a href="/add-expense" class="btn btn-primary">➕ New Expense</a>
+</div>
+
+<!-- ── Search bar ── -->
+<div class="card" style="margin-bottom:20px; padding:14px 22px;
+            display:flex; align-items:center; gap:12px;
+            animation: fadeSlideUp 0.4s 0.08s ease both;">
+    <span style="font-size:18px; color:var(--grey-4);">🔍</span>
+    <input id="search-input" type="text" placeholder="Search by title, category or payment…"
+        oninput="filterTable(this.value)" style="flex:1; background:transparent; border:none; outline:none;
+                  color:var(--navy); font-family:var(--font-body);
+                  font-size:14px; font-weight:500;">
+    <span id="count-badge" style="font-size:11px; font-weight:700; color:var(--blue);
+                 padding:4px 14px; border-radius:99px;
+                 background:var(--blue-tint); border:1px solid var(--blue-tint2);">
+        0 entries
+    </span>
+</div>
+
+<!-- ── Table Card ── -->
+<div class="card" style="padding:0; overflow:hidden;
+     animation: fadeSlideUp 0.4s 0.16s ease both;">
+
+    <table class="data-table" id="expense-table">
+        <thead>
+            <tr>
+                <th style="width:48px;">#</th>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Payment</th>
+                <th>Actions</th> <!-- ✅ ADDED -->
+            </tr>
+        </thead>
+
+        <tbody id="expense-body">
+            {% for e in expenses %}
+
+
+            <td style="color:var(--grey-4); font-size:12px; font-weight:600;">
+                {{ loop.index }}
+            </td>
+
+            <td>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="icon-circle icon-circle-blue"
+                        style="width:36px;height:36px;font-size:14px;border-radius:10px;">
+                        💳
+                    </div>
+                    <span style="font-weight:600; color:var(--navy);">{{ e.title }}</span>
+                </div>
+            </td>
+
+            <td>
+                <span style="font-family:var(--font-display); font-size:17px;
+                                 font-weight:700; color:var(--danger);">
+                    ₹{{ e.amount }}
+                </span>
+            </td>
+
+            <td>
+                <span class="badge badge-blue">
+                    {{ e.category if e.category else '—' }}
+                </span>
+            </td>
+
+            <td style="color:var(--grey-3); font-size:13px;">
+                {{ e.date if e.date else '—' }}
+            </td>
+
+            <td>
+                {% if e.payment_mode %}
+                <span class="badge badge-grey">{{ e.payment_mode }}</span>
+                {% else %}
+                <span style="color:var(--grey-4);">—</span>
+                {% endif %}
+            </td>
+
+            <!-- ✅ ACTION BUTTONS -->
+            <td>
+                <div style="display:flex; gap:10px;">
+
+                    <!-- ✏️ Edit -->
+                    <a href="{{ url_for('edit_expense', id=e.id) }}" class="badge badge-blue"
+                        style="cursor:pointer; text-decoration:none;">
+                        ✏️ Edit
+                    </a>
+
+                    <!-- 🗑️ Delete -->
+                    <a href="/delete-expense/{{ e.id }}" onclick="return confirmDelete()" class="badge badge-grey"
+                        style="cursor:pointer; text-decoration:none;">
+                        🗑️
+                    </a>
+
+                </div>
+            </td>
+
+            </tr>
+
+            {% else %}
+            <tr id="empty-row">
+                <td colspan="7" style="text-align:center; padding:64px 20px; color:var(--grey-3);">
+                    <div style="font-size:40px; margin-bottom:16px; opacity:0.3;">📋</div>
+                    <div style="font-family:var(--font-display); font-size:22px;
+                                color:var(--navy); font-weight:600; margin-bottom:8px;">
+                        No expenses yet
+                    </div>
+                    <div style="font-size:13px; margin-bottom:24px;">
+                        Add your first expense to get started
+                    </div>
+                    <a href="/add-expense" class="btn btn-primary">➕ Add Expense</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    function filterTable(q) {
+        const rows = document.querySelectorAll('#expense-body tr:not(#empty-row)');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const match = row.textContent.toLowerCase().includes(q.toLowerCase());
+            row.style.display = match ? '' : 'none';
+            if (match) visible++;
+        });
+
+        document.getElementById('count-badge').textContent = visible + ' entries';
+    }
+
+    const all = document.querySelectorAll('#expense-body tr:not(#empty-row)');
+    document.getElementById('count-badge').textContent = all.length + ' entries';
+</script>
+
+{% endblock %}

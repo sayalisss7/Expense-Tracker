@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ── Header ── -->
+<div class="page-header" style="animation: fadeSlideDown 0.45s ease both;">
+    <h2>Add Expense</h2>
+    <p class="subtitle">Record a new transaction</p>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 340px; gap:22px; align-items:start;">
+
+    <!-- ── Form Card ── -->
+    <div class="card" style="animation: fadeSlideUp 0.45s 0.08s ease both;">
+
+        <form method="POST" id="expense-form" onsubmit="handleSubmit(event)">
+
+            <div class="form-group">
+                <label for="title">Expense Title</label>
+                <input class="form-control" id="title" name="title" placeholder="e.g. Grocery, Petrol, Rent…" required>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label for="amount">Amount (₹)</label>
+                    <input class="form-control" id="amount" name="amount" type="number" placeholder="0.00" min="0"
+                        step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date</label>
+                    <input class="form-control" id="date" name="date" type="date">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                <div class="form-group">
+                    <label for="category_id">Category</label>
+                    <select class="form-control" id="category_id" name="category_id">
+                        {% for c in categories %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payment_mode">Payment Mode</label>
+                    <select class="form-control" id="payment_mode" name="payment_mode">
+                        <option value="">Select…</option>
+                        <option value="Cash">💵 Cash</option>
+                        <option value="Card">💳 Card</option>
+                        <option value="UPI">📲 UPI</option>
+                        <option value="Net Banking">🏦 Net Banking</option>
+                        <option value="Wallet">👛 Wallet</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Payment mode quick-select pills -->
+            <div style="margin-bottom:22px;">
+                <div style="font-size:11px;font-weight:600;letter-spacing:1.2px;
+                            text-transform:uppercase;color:var(--grey-2);margin-bottom:10px;">
+                    Quick Select
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    {% for mode, icon in [('Cash','💵'),('Card','💳'),('UPI','📲'),('Net Banking','🏦')] %}
+                    <button type="button" onclick="selectMode('{{ mode }}')" id="pill-{{ mode | replace(' ','-') }}"
+                        style="padding:7px 16px;border-radius:99px;border:1.5px solid var(--grey-5);
+                                   background:var(--bg);color:var(--grey-1);font-size:13px;font-weight:500;
+                                   cursor:pointer;transition:all 0.15s;font-family:var(--font-body);">
+                        {{ icon }} {{ mode }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="submit-btn"
+                style="width:100%; justify-content:center; padding:14px; font-size:15px;">
+                <span id="btn-icon">➕</span>
+                <span id="btn-text">Save Expense</span>
+            </button>
+
+        </form>
+    </div>
+
+    <!-- ── Side Panel ── -->
+    <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <!-- Live Preview Card (like the payment card in the app) -->
+        <div class="card card-blue" style="animation: fadeSlideUp 0.45s 0.16s ease both;">
+            <div style="position:relative;z-index:1;">
+                <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+                            color:rgba(255,255,255,0.6);margin-bottom:20px;">Live Preview</div>
+
+                <div style="display:flex;align-items:center;gap:14px;
+                            padding:16px;border-radius:16px;background:rgba(255,255,255,0.12);
+                            backdrop-filter:blur(8px);">
+                    <div id="preview-icon" style="width:44px;height:44px;border-radius:13px;
+                                background:rgba(255,255,255,0.2);display:flex;
+                                align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
+                        📝
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div id="preview-title" style="font-weight:600;font-size:14px;color:#fff;
+                                    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            Your expense title
+                        </div>
+                        <div id="preview-meta" style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:3px;">
+                            Category · Mode
+                        </div>
+                    </div>
+                    <div id="preview-amount" style="font-family:var(--font-display);font-size:22px;font-weight:700;
+                                color:#fff;flex-shrink:0;">
+                        ₹—
+                    </div>
+                </div>
+
+                <div style="margin-top:18px;font-size:11px;color:rgba(255,255,255,0.4);text-align:center;">
+                    Updates as you type
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card" style="animation: fadeSlideUp 0.45s 0.24s ease both;
+             background:var(--blue-tint); border-color:var(--blue-tint2);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+                        color:var(--blue);margin-bottom:16px;">✦ Tips</div>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:12px;">
+                <li style="display:flex;gap:10px;font-size:13px;color:var(--grey-1);line-height:1.55;">
+                    <span style="width:20px;height:20px;border-radius:6px;background:var(--blue);
+                                 color:#fff;display:flex;align-items:center;justify-content:center;
+                                 font-size:10px;flex-shrink:0;margin-top:1px;">→</span>
+                    Set the date for accurate monthly reports
+                </li>
+                <li style="display:flex;gap:10px;font-size:13px;color:var(--grey-1);line-height:1.55;">
+                    <span style="width:20px;height:20px;border-radius:6px;background:var(--blue);
+                                 color:#fff;display:flex;align-items:center;justify-content:center;
+                                 font-size:10px;flex-shrink:0;margin-top:1px;">→</span>
+                    Use categories to see where money flows
+                </li>
+                <li style="display:flex;gap:10px;font-size:13px;color:var(--grey-1);line-height:1.55;">
+                    <span style="width:20px;height:20px;border-radius:6px;background:var(--blue);
+                                 color:#fff;display:flex;align-items:center;justify-content:center;
+                                 font-size:10px;flex-shrink:0;margin-top:1px;">→</span>
+                    Log cash immediately — it's easy to forget
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ── Live preview ──
+    const titleEl = document.getElementById('title');
+    const amountEl = document.getElementById('amount');
+    const catEl = document.getElementById('category_id');
+    const modeEl = document.getElementById('payment_mode');
+
+    const prevTitle = document.getElementById('preview-title');
+    const prevAmount = document.getElementById('preview-amount');
+    const prevMeta = document.getElementById('preview-meta');
+    const prevIcon = document.getElementById('preview-icon');
+
+    const icons = { Cash: '💵', Card: '💳', UPI: '📲', 'Net Banking': '🏦', Wallet: '👛', '': '📝' };
+
+    function updatePreview() {
+        prevTitle.textContent = titleEl.value || 'Your expense title';
+        prevAmount.textContent = amountEl.value
+            ? '₹' + parseFloat(amountEl.value).toLocaleString('en-IN')
+            : '₹—';
+        const cat = catEl.options[catEl.selectedIndex]?.text || 'Category';
+        const mode = modeEl.value || 'Mode';
+        prevMeta.textContent = cat + ' · ' + mode;
+        prevIcon.textContent = icons[modeEl.value] ?? '📝';
+    }
+
+    [titleEl, amountEl, catEl, modeEl].forEach(el => el && el.addEventListener('input', updatePreview));
+
+    // ── Quick-select pills ──
+    function selectMode(mode) {
+        modeEl.value = mode;
+        document.querySelectorAll('[id^="pill-"]').forEach(p => {
+            p.style.background = 'var(--bg)';
+            p.style.borderColor = 'var(--grey-5)';
+            p.style.color = 'var(--grey-1)';
+        });
+        const pid = 'pill-' + mode.replace(/ /g, '-');
+        const el = document.getElementById(pid);
+        if (el) {
+            el.style.background = 'var(--blue)';
+            el.style.borderColor = 'var(--blue)';
+            el.style.color = '#fff';
+        }
+        updatePreview();
+    }
+
+    // ── Submit animation ──
+    function handleSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        document.getElementById('btn-icon').textContent = '⏳';
+        document.getElementById('btn-text').textContent = 'Saving…';
+        btn.style.opacity = '0.8';
+        setTimeout(() => e.target.submit(), 450);
+    }
+
+    // ── Default to today ──
+    const dateEl = document.getElementById('date');
+    if (dateEl && !dateEl.value) {
+        dateEl.value = new Date().toISOString().split('T')[0];
+    }
+</script>
+
+{% endblock %}

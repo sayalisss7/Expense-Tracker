@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ── Page Header ── -->
+<div class="page-header" style="animation: fadeSlideDown 0.4s ease; text-align:center;">
+    <h2>Edit Expense</h2>
+    <p class="subtitle">Update your expense details</p>
+</div>
+
+<!-- ── Center Wrapper ── -->
+<div style="display:flex; justify-content:center; align-items:center; min-height:75vh;">
+
+    <!-- ── Card Form ── -->
+    <div class="card" style="width:100%; max-width: 650px; animation: fadeSlideUp 0.45s ease;">
+
+        <form method="POST" onsubmit="return validateForm()">
+
+            <!-- Title -->
+            <div class="form-group">
+                <label>Title</label>
+                <input class="form-control" name="title" value="{{ expense.title }}" placeholder="e.g. Grocery, Rent"
+                    required>
+            </div>
+
+            <!-- Amount -->
+            <div class="form-group">
+                <label>Amount</label>
+                <input class="form-control" name="amount" type="number" step="0.01" value="{{ expense.amount }}"
+                    placeholder="₹ 0.00" required>
+            </div>
+
+            <!-- Date -->
+            <div class="form-group">
+                <label>Date</label>
+                <input class="form-control" name="date" type="date"
+                    value="{{ expense.expense_date if expense.expense_date else '' }}">
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label>Category</label>
+                <select class="form-control" name="category_id">
+                    {% for c in categories %}
+                    <option value="{{ c.id }}" {% if c.id==expense.category_id %}selected{% endif %}>
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Payment Mode -->
+            <div class="form-group">
+                <label>Payment Mode</label>
+                <select class="form-control" name="payment_mode">
+                    {% set modes = ['Cash','Card','UPI','Net Banking','Other'] %}
+                    {% for m in modes %}
+                    <option value="{{ m }}" {% if m==expense.payment_mode %}selected{% endif %}>
+                        {{ m }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label>Description</label>
+                <input class="form-control" name="description" placeholder="Optional notes..."
+                    value="{{ expense.description or '' }}">
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex; gap:12px; margin-top: 15px; justify-content:flex-end;">
+                <a href="/" class="btn btn-outline">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    💾 Update Expense
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<!-- Validation -->
+<script>
+    function validateForm() {
+        const amount = document.querySelector('[name="amount"]').value;
+
+        if (amount <= 0) {
+            alert("Amount must be greater than 0");
+            return false;
+        }
+        return true;
+    }
+</script>
+
+{% endblock %}
